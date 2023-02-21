@@ -72,6 +72,7 @@ if __name__ == '__main__':
         logging.info(f"input Sentence: {args.string}")
         manipulate_string = Manipulate_string()
         output = manipulate_string.output(args.string)
+        logging.info(f"Manipulated string: {output}")
     else:   
         logging.info("Starting  GUI")
         root = tk.Tk()
