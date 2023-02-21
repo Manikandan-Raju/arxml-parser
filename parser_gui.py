@@ -105,8 +105,6 @@ class gui:
         row_3.pack(side=tk.TOP, fill=tk.X, padx=10, pady=10)
         self.root.mainloop()
 
-def command_args():
-    pass
 
 
 if __name__ == '__main__':
