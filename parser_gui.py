@@ -9,6 +9,9 @@ from typing import List
 import json
 import pandas as pd
 import os
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 @dataclass
 class Container:
@@ -45,12 +48,13 @@ class arxml_parsing:
                 if sub_cont:
                     for sub_cont in cont.findall(SUB_CONTAINERS,self.namespace):
                         sub_container_name = next(iter(c.text  for c in sub_cont if c.tag == f'{{{self.schema}}}SHORT-NAME'))
-                        sub_definition_ref = next(iter(c.text  for c in sub_cont if c.tag == f'{{{self.schema}}}DEFINITION-REF'))
+                        sub_definition_ref = next(iter(c.text  for c in sub_cont if c.tag == f'{{{self.schema}}}DEFINITION-REF')).split('/')[-1]
                         container = Container(ecu_name,config_value,container_name,definition_ref,sub_container_name,sub_definition_ref)
                         self.database.append(container)
                 else:
                     container = Container(ecu_name,config_value,container_name,definition_ref,None,None)
                     self.database.append(container)
+        logging.info("Containers and sub containers extracted")
     
     def get_database(self,db_path,xl_path):
         db = [cont.__dict__ for cont in self.database]
@@ -58,11 +62,13 @@ class arxml_parsing:
         with open(db_path,'w+') as f:
             json.dump(db,f,indent=4)
         df.to_excel(xl_path+os.sep+'db.xlsx',index=False)
+        logging.info("Containers Database Excel Created")
 
 class gui:
 
     def __init__(self) -> None:
         self.root = tk.Tk()
+        self.root.geometry('250x125')
         self.filename = ''
         self.foldername = ''
         self.show()
@@ -70,10 +76,25 @@ class gui:
     def browsefile(self):
         tk.Tk().withdraw()
         self.filename = askopenfilename()
+        if os.path.isfile(self.filename) and "xml" in self.filename:
+            logging.info("ARXML File selected")
+            tk.messagebox.showinfo(title='ARXML File selected', message=self.filename )
+        else:
+            logging.error("ARXMl path not valid")
+            tk.messagebox.showerror("showerror", "Please Update valid ARXMl path")
+            
 
     def browsefolder(self):
         tk.Tk().withdraw()
         self.foldername = askdirectory()
+        if os.path.isdir(self.foldername):
+            logging.info("Excel directory selected")
+            tk.messagebox.showinfo(title='Excel directory selected', message=self.foldername )
+        else:
+            logging.error("Excel path not valid")
+            tk.messagebox.showerror("showerror", "Please Update valid Excel path")
+            
+        
         
     def run(self):
         if os.path.isfile(self.filename) and "xml" in self.filename  and os.path.isdir(self.foldername):
@@ -81,28 +102,29 @@ class gui:
             self.root.quit()
         else:
             tk.messagebox.showerror("showerror", "Please Update Both ARXMl and Excel valid paths")
+            logging.error("Please Update Both ARXMl and Excel valid paths")
 
     def show(self):
         row_1 = tk.Frame(self.root)
-        arxml = tk.Label(row_1, text="ARXML path")
+        arxml = tk.Label(row_1, text="Choose input ARXML file")
         arxml.pack(side=tk.LEFT)
         arxml_path = tk.Button(row_1, text="Browse", command=self.browsefile)
-        arxml_path.pack(side=tk.LEFT, padx=5, pady=5)
-        row_1.pack(side=tk.TOP, fill=tk.X, padx=10, pady=10)
+        arxml_path.pack(side=tk.RIGHT, padx=5, pady=5)
+        row_1.pack(side=tk.TOP, fill=tk.X, padx=10, pady=0)
 
         row_2 = tk.Frame(self.root)
-        xl = tk.Label(row_2, text="Excel path")
+        xl = tk.Label(row_2, text="Choose excel output directory")
         xl.pack(side=tk.LEFT)
         xl_path = tk.Button(row_2, text="Browse", command=self.browsefolder)
-        xl_path.pack(side=tk.LEFT, padx=5, pady=5)
-        row_2.pack(side=tk.TOP, fill=tk.X, padx=10, pady=10)
+        xl_path.pack(side=tk.RIGHT, padx=5, pady=5)
+        row_2.pack(side=tk.TOP, fill=tk.X, padx=10, pady=0)
 
         row_3 = tk.Frame(self.root)
         run = tk.Button(row_3, text='Parse',command=self.run)
-        run.pack(side=tk.LEFT, padx=5, pady=5)
+        run.pack(side=tk.LEFT, padx=40, pady=5)
         quit = tk.Button(row_3, text='Quit', command=self.root.quit)
-        quit.pack(side=tk.LEFT, padx=5, pady=5)
-        row_3.pack(side=tk.TOP, fill=tk.X, padx=10, pady=10)
+        quit.pack(side=tk.RIGHT, padx=40, pady=5)
+        row_3.pack(side=tk.TOP, fill=tk.X, padx=10, pady=0)
         self.root.mainloop()
 
 
@@ -127,5 +149,6 @@ if __name__ == '__main__':
     if os.path.isfile(str(args.arxml)) and os.path.isdir(str(args.excel)):
         arxml_parsing(args.arxml,r'db.json',args.excel)
     else:   
+        logging.info("Starting ARXML Parser tool GUI")
         gui()
-    print('done')
+    logging.info('DONE')
