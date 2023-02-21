@@ -1,0 +1,6 @@
+build
+dist
+db.json
+db.xlsx
+*.pyc
+*.spec
