@@ -7,7 +7,8 @@ from xml.etree import ElementTree
 from dataclasses import dataclass, field
 from typing import List
 import json
-import pandas as pd
+# import pandas as pd
+from openpyxl import Workbook
 import os
 import logging
 
@@ -58,10 +59,22 @@ class arxml_parsing:
     
     def get_database(self,db_path,xl_path):
         db = [cont.__dict__ for cont in self.database]
-        df = pd.DataFrame(db)
+        # df = pd.DataFrame(db)
         with open(db_path,'w+') as f:
             json.dump(db,f,indent=4)
-        df.to_excel(xl_path+os.sep+'db.xlsx',index=False)
+        # df.to_excel(xl_path+os.sep+'db.xlsx',index=False)
+        keys = []
+        wb = Workbook()
+        ws = wb.active  
+        for i in range(len(db)) :
+            sub_obj = db[i]
+            if i == 0 :
+                keys = list(sub_obj.keys())
+                for k in range(len(keys)) :
+                    ws.cell(row = (i + 1), column = (k + 1), value = keys[k]);
+            for j in range(len(keys)) :
+                ws.cell(row = (i + 2), column = (j + 1), value = sub_obj[keys[j]]);
+        wb.save(xl_path+os.sep+'db.xlsx')
         logging.info("Containers Database Excel Created")
 
 class gui:
@@ -147,6 +160,7 @@ if __name__ == '__main__':
     )
     args = cmd_parser.parse_args()
     if os.path.isfile(str(args.arxml)) and os.path.isdir(str(args.excel)):
+        logging.info("Starting ARXML Parser tool")
         arxml_parsing(args.arxml,r'db.json',args.excel)
     else:   
         logging.info("Starting ARXML Parser tool GUI")
