@@ -1,4 +1,4 @@
-name: Bazel C++
+name: arxml parser
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build:
+  bazel:
     runs-on: ubuntu-latest
     
     steps:
@@ -32,3 +32,22 @@ jobs:
       run: |
         "${GITHUB_WORKSPACE}/bin/bazel" version
         "${GITHUB_WORKSPACE}/bin/bazel" run //:run
+        
+  python:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Install python
+      run: |
+        apt install python3
+        apt install python3-pip
+
+    - name: Install dependencies
+      run: |
+        pip3 install -r requirements.txt
+
+    - name: Build
+      run: |
+        python3 run.py
