@@ -79,8 +79,8 @@ class gui:
 
     def __init__(self) -> None:
         self.root = tk.Tk()
-        self.root.geometry('250x125')
-        self.filename = 'AutosarFile.xml'
+        self.root.geometry('500x150')
+        self.filename = 'AutosarFile.arxml'
         self.foldername = 'db'
         self.show()
 
