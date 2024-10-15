@@ -1,6 +1,4 @@
-build
-dist
+
 db/db.*
 *.pyc
-*.spec
 bazel-*
