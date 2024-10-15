@@ -82,8 +82,8 @@ class gui:
     def __init__(self) -> None:
         self.root = tk.Tk()
         self.root.geometry('250x125')
-        self.filename = ''
-        self.foldername = ''
+        self.filename = 'AutosarFile.xml'
+        self.foldername = 'db'
         self.show()
 
     def browsefile(self):
