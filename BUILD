@@ -1,3 +1,5 @@
+load("@my_deps//:requirements.bzl", "requirement")
+
 filegroup(
     name = "filesysytem",
     srcs = [
@@ -11,5 +13,5 @@ py_binary(
     srcs = ["run.py"],
     data = [":filesysytem"],
     visibility = ["//visibility:public"],
-    deps = ["//app:arxml_parsing"],
+    deps = ["//app:arxml_parsing"]+ [requirement("openpyxl")],
 )
