@@ -7,7 +7,6 @@ from xml.etree import ElementTree
 from dataclasses import dataclass, field
 from typing import List
 import json
-# import pandas as pd
 from openpyxl import Workbook
 import os
 import logging
@@ -25,7 +24,7 @@ class Container:
 
 class arxml_parsing:
         
-    def __init__(self,arxml_path,db_path,xl_path) -> None:
+    def __init__(self,arxml_path,db_path) -> None:
         """Constructor for arxml_parsing"""
         self.arxml_path = arxml_path
         self.schema = "http://autosar.org/schema/r4.0"
@@ -33,7 +32,7 @@ class arxml_parsing:
         self.root = ElementTree.parse(self.arxml_path)
         self.database: List[Container] = []
         self.extract_containers()
-        self.get_database(db_path,xl_path)
+        self.get_database(db_path)
         
     def extract_containers(self):
         ecu_name = self.root.find("as:AR-PACKAGES/as:AR-PACKAGE/as:SHORT-NAME",self.namespace).text
@@ -46,7 +45,7 @@ class arxml_parsing:
                 definition_ref = next(iter(c.text  for c in cont if c.tag == f'{{{self.schema}}}DEFINITION-REF'))
                 SUB_CONTAINERS = "as:SUB-CONTAINERS/as:ECUC-CONTAINER-VALUE"
                 sub_cont = cont.find("as:SUB-CONTAINERS",self.namespace)
-                if sub_cont:
+                if sub_cont is not None:
                     for sub_cont in cont.findall(SUB_CONTAINERS,self.namespace):
                         sub_container_name = next(iter(c.text  for c in sub_cont if c.tag == f'{{{self.schema}}}SHORT-NAME'))
                         sub_definition_ref = next(iter(c.text  for c in sub_cont if c.tag == f'{{{self.schema}}}DEFINITION-REF')).split('/')[-1]
@@ -57,12 +56,11 @@ class arxml_parsing:
                     self.database.append(container)
         logging.info("Containers and sub containers extracted")
     
-    def get_database(self,db_path,xl_path):
+    def get_database(self,db_path):
         db = [cont.__dict__ for cont in self.database]
-        # df = pd.DataFrame(db)
-        with open(db_path,'w+') as f:
+        json_path = os.path.join(db_path,'db.json')
+        with open(json_path,'w+') as f:
             json.dump(db,f,indent=4)
-        # df.to_excel(xl_path+os.sep+'db.xlsx',index=False)
         keys = []
         wb = Workbook()
         ws = wb.active  
@@ -74,7 +72,7 @@ class arxml_parsing:
                     ws.cell(row = (i + 1), column = (k + 1), value = keys[k]);
             for j in range(len(keys)) :
                 ws.cell(row = (i + 2), column = (j + 1), value = sub_obj[keys[j]]);
-        wb.save(xl_path+os.sep+'db.xlsx')
+        wb.save(db_path+os.sep+'db.xlsx')
         logging.info("Containers Database Excel Created")
 
 class gui:
@@ -111,7 +109,7 @@ class gui:
         
     def run(self):
         if os.path.isfile(self.filename) and "xml" in self.filename  and os.path.isdir(self.foldername):
-            arxml_parsing(self.filename,r'db.json',self.foldername)
+            arxml_parsing(self.filename,self.foldername)
             self.root.quit()
         else:
             tk.messagebox.showerror("showerror", "Please Update Both ARXMl and Excel valid paths")
@@ -161,7 +159,7 @@ if __name__ == '__main__':
     args = cmd_parser.parse_args()
     if os.path.isfile(str(args.arxml)) and os.path.isdir(str(args.excel)):
         logging.info("Starting ARXML Parser tool")
-        arxml_parsing(args.arxml,r'db.json',args.excel)
+        arxml_parsing(args.arxml,args.excel)
     else:   
         logging.info("Starting ARXML Parser tool GUI")
         gui()

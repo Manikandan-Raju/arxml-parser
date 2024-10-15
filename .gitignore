@@ -1,6 +1,6 @@
 build
 dist
-db/*.xlsx
+db/db.*
 *.pyc
 *.spec
 bazel-*
