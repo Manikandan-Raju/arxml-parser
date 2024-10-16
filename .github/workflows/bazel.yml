@@ -9,7 +9,7 @@ on:
 jobs:
   bazel:
     runs-on: 
-      - windows-latest
+      - ubuntu-latest
     
     steps:
     - uses: actions/checkout@v1
